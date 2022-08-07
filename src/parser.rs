@@ -9,6 +9,7 @@ pub struct Parser {
 #[derive(Default, Clone, Debug)]
 pub struct Org {
     title: String,
+    date: String,
 }
 
 impl Parser {
@@ -55,12 +56,27 @@ impl Parser {
         }
         &self.contents[self.start..self.current]
     }
-                
 
-    fn eat_meta(&mut self) -> Org {
-        let title = self.eat_until('\n');
-        Org {
-            title: title.to_owned()
+    fn skip(&mut self) {
+        self.start = self.current;
+    }
+
+    fn eat_meta(&mut self) {
+        let tag = self.eat_until(':');
+        match tag {
+            "#+TITLE" => {
+                self.advance();
+                self.skip();
+                let data = self.eat_until('\n').trim();
+                self.output.title = data.to_owned();
+            }
+            "#+DATE" => {
+                self.advance();
+                self.skip();
+                let data = self.eat_until('\n').trim();
+                self.output.date = data.to_owned();
+            }
+            _ => todo!()
         }
     }
 
@@ -70,16 +86,17 @@ impl Parser {
             if let Some(next_char) = self.advance() {
                 match next_char {
                     '#' => if self.next_eq('+') {
-                        return Some(self.eat_meta());
+                        self.eat_meta();
                     } else {
                         todo!()
                     }
-                    _ => todo!()
+                    '\n' => continue,
+                    _ => break, 
                 }
             } else {
                 todo!()
             }
         }
-        None
+        Some(self.output.clone())
     }
 }
