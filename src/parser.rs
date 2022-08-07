@@ -3,13 +3,12 @@ pub struct Parser {
     contents: String,
     start: usize,
     current: usize,
-    output: Org,
 }
 
-#[derive(Default, Clone, Debug)]
-pub struct Org {
-    title: String,
-    date: String,
+#[derive(Debug, Clone)]
+pub enum OrgEle {
+    Title(String),
+    Date(String),
 }
 
 impl Parser {
@@ -61,42 +60,45 @@ impl Parser {
         self.start = self.current;
     }
 
-    fn eat_meta(&mut self) {
+    fn eat_meta(&mut self) -> OrgEle {
         let tag = self.eat_until(':');
         match tag {
-            "#+TITLE" => {
+            "+TITLE" => {
                 self.advance();
                 self.skip();
                 let data = self.eat_until('\n').trim();
-                self.output.title = data.to_owned();
+                return OrgEle::Title(data.to_owned());
             }
-            "#+DATE" => {
+            "+DATE" => {
                 self.advance();
                 self.skip();
                 let data = self.eat_until('\n').trim();
-                self.output.date = data.to_owned();
+                return OrgEle::Date(data.to_owned());
             }
-            _ => todo!()
-        }
-    }
-
-    pub fn parse(&mut self) -> Option<Org> {
-        while !self.is_at_end() {
-            self.start = self.current;
-            if let Some(next_char) = self.advance() {
-                match next_char {
-                    '#' => if self.next_eq('+') {
-                        self.eat_meta();
-                    } else {
-                        todo!()
-                    }
-                    '\n' => continue,
-                    _ => break, 
-                }
-            } else {
+            _ => {
+                println!("Tag: {tag}");
                 todo!()
             }
         }
-        Some(self.output.clone())
+    }
+
+    pub fn parse(&mut self) -> Vec<OrgEle> {
+        let mut result: Vec<OrgEle> = vec![];
+        while let Some(next_char) = self.advance() { 
+            self.start = self.current;
+            match next_char {
+                '#' => {
+                    if self.next_eq('+') {
+                        let ele = self.eat_meta();
+                        result.push(ele);
+                    } else {
+                        todo!()
+                    }
+                }
+                '\n' => continue,
+                _ => break,
+            }
+        }
+        result
     }
 }
