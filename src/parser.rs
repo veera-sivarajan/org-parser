@@ -1,6 +1,6 @@
 #[derive(Default)]
 pub struct Parser {
-    file: String,
+    contents: String,
     start: usize,
     current: usize,
     output: Org,
@@ -13,60 +13,54 @@ struct Org {
 }
 
 impl Parser {
-    pub fn new(file: &str) -> Self {
+    pub fn new(contents: &str) -> Self {
         Self {
-            file: file.to_owned(),
+            contents: contents.to_owned(),
             ..Default::default()
         }
     }
 
     fn is_at_end(&self) -> bool {
-        self.current >= self.file.len()
-    }
-
-    fn peek(&self) -> Option<char> {
-        if !self.is_at_end() {
-            Some(self.file.chars().nth(self.current).unwrap())
-        } else {
-            None
-        }
+        self.current >= self.contents.len()
     }
 
     fn advance(&mut self) -> Option<char> {
-        let c = self.peek();
+        let c = self.contents.chars().nth(self.current);
         self.current += 1;
         c
     }
 
-    fn next_eq(&mut self, expected: char) -> bool {
-        self.peek().map_or(false, |c| {
-            if c == expected {
-                self.advance();
-                true
-            } else {
-                false
-            }
-        })
+    fn peek(&self) -> Option<char> {
+        self.contents.chars().nth(self.current)
     }
 
-    fn eat_meta(&mut self) {
-        todo!()
+    fn next_eq(&mut self, expected: char) -> bool {
+        self.peek()
+            .map_or(false, |c| {
+                if c == expected {
+                    self.advance();
+                    true
+                } else {
+                    false
+                }
+            })
     }
 
     pub fn parse(&mut self) -> Org {
-        self.start = self.current;
-        if let Some(c) = self.advance() {
-            match c {
-                '#' => {
-                    if self.next_eq('+') {
+        while !self.is_at_end() {
+            self.start = self.current;
+            if let Some(next_char) = self.advance() {
+                match next_char {
+                    '#' => if self.next_eq('+') {
                         self.eat_meta()
                     } else {
                         todo!()
                     }
+                    _ => todo!()
                 }
-                _ => todo!()
+            } else {
+                todo!()
             }
         }
-        self.output.clone()
     }
 }
