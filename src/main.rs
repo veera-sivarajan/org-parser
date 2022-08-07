@@ -10,5 +10,7 @@ fn read_file(name: &str) -> String {
 fn main() {
     let test_file = "/home/veera/Projects/orgp/test/example.org";
     let contents = read_file(test_file);
-    let parser = parser::Parser::new(&contents);
+    let mut parser = parser::Parser::new(&contents);
+    let org = parser.parse();
+    println!("{:?}", org);
 }
