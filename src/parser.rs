@@ -9,6 +9,8 @@ pub struct Parser {
 pub enum OrgEle {
     Title(String),
     Date(String),
+    Author(String),
+    Todo,
 }
 
 impl Parser {
@@ -25,12 +27,15 @@ impl Parser {
 
     fn advance(&mut self) -> Option<char> {
         let c = self.contents.chars().nth(self.current);
+        println!("Advancing to: {:#?}", c);
         self.current += 1;
         c
     }
 
     fn peek(&self) -> Option<char> {
-        self.contents.chars().nth(self.current)
+        let c = self.contents.chars().nth(self.current);
+        println!("Peeking at: {:#?}", c);
+        c
     }
 
     fn next_eq(&mut self, expected: char) -> bool {
@@ -45,15 +50,16 @@ impl Parser {
             })
     }
 
-    fn eat_until(&mut self, end: char) -> &str {
+    fn eat_until(&mut self, end: char) -> String {
         while let Some(c) = self.peek() {
             if c != end {
                 let _ = self.advance();
             } else {
+                let _ = self.advance();
                 break;
             }
         }
-        &self.contents[self.start..self.current]
+        self.contents[self.start..self.current].to_string()
     }
 
     fn skip(&mut self) {
@@ -62,23 +68,13 @@ impl Parser {
 
     fn eat_meta(&mut self) -> OrgEle {
         let tag = self.eat_until(':');
-        match tag {
-            "+TITLE" => {
-                self.advance();
-                self.skip();
-                let data = self.eat_until('\n').trim();
-                return OrgEle::Title(data.to_owned());
-            }
-            "+DATE" => {
-                self.advance();
-                self.skip();
-                let data = self.eat_until('\n').trim();
-                return OrgEle::Date(data.to_owned());
-            }
-            _ => {
-                println!("Tag: {tag}");
-                todo!()
-            }
+        self.skip();
+        let data = self.eat_until('\n').trim().to_owned();
+        match tag.as_str() {
+            "+TITLE:" => OrgEle::Title(data),
+            "+DATE:" => OrgEle::Date(data),
+            "+AUTHOR:" => OrgEle::Author(data),
+            _ => OrgEle::Todo,
         }
     }
 
