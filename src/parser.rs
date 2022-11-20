@@ -50,7 +50,7 @@ impl Parser {
             })
     }
 
-    fn eat_until(&mut self, end: char) -> String {
+    fn eat_until(&mut self, end: char) -> &str {
         while let Some(c) = self.peek() {
             if c != end {
                 let _ = self.advance();
@@ -67,7 +67,7 @@ impl Parser {
     }
 
     fn eat_meta(&mut self) -> OrgEle {
-        let tag = self.eat_until(':');
+        let tag = self.eat_until(':').to_owned();
         self.skip();
         let data = self.eat_until('\n').trim().to_owned();
         match tag.as_str() {
