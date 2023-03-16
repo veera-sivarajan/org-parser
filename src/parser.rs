@@ -1,105 +1,43 @@
 #[derive(Default)]
 pub struct Parser {
-    contents: String,
-    start: usize,
-    current: usize,
+    elements: Vec<OrgEle>,
 }
 
 #[derive(Debug, Clone)]
 pub enum OrgEle {
     Title(String),
     Date(String),
-    Author(String),
-    Todo,
 }
 
 impl Parser {
-    pub fn new(contents: &str) -> Self {
+    pub fn new() -> Self {
         Self {
-            contents: contents.to_owned(),
-            ..Default::default()
+            elements: vec![],
         }
     }
 
-    fn is_at_end(&self) -> bool {
-        self.current >= self.contents.len()
+    fn parse_title(&mut self, line: &str) {
+        let title = line.strip_prefix("#+TITLE:").unwrap();
+        self.elements.push(OrgEle::Title(title.trim().to_string()));
     }
 
-    fn advance(&mut self) -> Option<char> {
-        let c = self.contents.chars().nth(self.current);
-        println!("Advancing to: {:#?}", c);
-        self.current += 1;
-        c
+    
+    fn parse_date(&mut self, line: &str) {
+        let date = line.strip_prefix("#+DATE:").unwrap();
+        self.elements.push(OrgEle::Date(date.trim().to_string()));
     }
 
-    fn peek(&self) -> Option<char> {
-        let c = self.contents.chars().nth(self.current);
-        println!("Peeking at: {:#?}", c);
-        c
-    }
-
-    fn next_eq(&mut self, expected: char) -> bool {
-        self.peek()
-            .map_or(false, |c| {
-                if c == expected {
-                    self.advance();
-                    true
-                } else {
-                    false
-                }
-            })
-    }
-
-    fn eat_until(&mut self, end: char) -> &str {
-        while let Some(c) = self.peek() {
-            if c != end {
-                let _ = self.advance();
+    pub fn parse(&mut self, contents: &str) -> Vec<OrgEle> { 
+        for line in contents.lines() {
+            if line.starts_with("#+TITLE:") {
+                self.parse_title(line);
+            } else if line.starts_with("#+DATE:") {
+                self.parse_date(line);
             } else {
-                let _ = self.advance();
-                break;
+                continue
             }
         }
-        &self.contents[self.start..self.current]
-    }
-
-    fn skip(&mut self) {
-        self.start = self.current;
-    }
-
-    fn eat_meta(&mut self) -> OrgEle {
-        let tag = self.eat_until(':').to_owned();
-        self.skip();
-        let data = self.eat_until('\n').trim().to_owned();
-        match tag.as_str() {
-            "+TITLE:" => OrgEle::Title(data),
-            "+DATE:" => OrgEle::Date(data),
-            "+AUTHOR:" => OrgEle::Author(data),
-            _ => OrgEle::Todo,
-        }
-    }
-
-    pub fn parse(&mut self) -> Vec<OrgEle> {
-        let mut result: Vec<OrgEle> = vec![];
-        while let Some(next_char) = self.advance() { 
-            self.start = self.current;
-            match next_char {
-                '#' => {
-                    if self.next_eq('+') {
-                        let ele = self.eat_meta();
-                        result.push(ele);
-                    } else {
-                        todo!()
-                    }
-                }
-                '*' => {
-                    
-
-
-                }
-                '\n' => continue,
-                _ => break,
-            }
-        }
-        result
+        self.elements.clone()
     }
 }
+

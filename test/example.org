@@ -3,27 +3,23 @@
 This is an example org file created to test my org parser. 
 * Headline #1
 Text can be put in headline. You can create another headline at the same level with another * character.
-** Nested headline
+** Nested headline #1.1
 Nesting headline is as easy as adding another start.
-
 - this
 - is
 - a
 - unordered
 - list
-*** Three levels deep headline
-
+*** Three levels deep headline #1.1.1
 1. this
 2. is
 3. a
 4. ordered
-5. list
-
+5. lis
 * Headline #2
 #+BEGIN_SRC rust
   fn factorial(num: u32) -> u32 {
       (1..=num).product()
   }
 #+END_SRC
-
 * Headline #3
