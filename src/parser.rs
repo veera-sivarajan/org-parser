@@ -59,7 +59,7 @@ impl Parser {
                 break;
             }
         }
-        self.contents[self.start..self.current].to_string()
+        &self.contents[self.start..self.current]
     }
 
     fn skip(&mut self) {
@@ -90,6 +90,11 @@ impl Parser {
                     } else {
                         todo!()
                     }
+                }
+                '*' => {
+                    
+
+
                 }
                 '\n' => continue,
                 _ => break,
