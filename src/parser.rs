@@ -29,12 +29,41 @@ impl OrgParser for &str {
 }
 
 #[derive(Debug, Clone)]
+enum ProgLang {
+    Rust,
+    Python,
+    Cpp,
+    C,
+    Java,
+    Unknown,
+}
+
+impl From<&str> for ProgLang {
+    fn from(text: &str) -> Self {
+        match text {
+            "rust" | "Rust" => ProgLang::Rust,
+            "python" | "Python" => ProgLang::Python,
+            "cpp" | "Cpp" => ProgLang::Cpp,
+            "c" | "C" => ProgLang::C,
+            "java" | "Java" => ProgLang::Java,
+            _ => ProgLang::Unknown,
+        }
+    }
+}
+
+#[derive(Debug, Clone)]
+pub struct CodeBlock {
+    language: ProgLang,
+    src: String,
+}
+
+#[derive(Debug, Clone)]
 pub enum OrgEle {
     Title(String),
     Date(String),
     UnOrderedList(Vec<String>),
     OrderedList(Vec<String>),
-    CodeBlock(String),
+    CodeBlock(CodeBlock),
     H3(String),
     H2(String),
     H1(String),
@@ -91,6 +120,9 @@ impl<'a> Parser<'a> {
 
     fn parse_code_block(&mut self) -> OrgEle {
         let mut code = String::new();
+        let first_line = self.lines.peek().unwrap();
+        let index = first_line.find(' ').unwrap() + 1;
+        let lang_text = &first_line[index..];
         self.lines.next();
         for line in self.lines.by_ref() {
             if line.starts_with("#+END_SRC") {
@@ -99,7 +131,10 @@ impl<'a> Parser<'a> {
                 code.push_str(line.trim());
             }
         }
-        OrgEle::CodeBlock(code)
+        OrgEle::CodeBlock(CodeBlock {
+            language: lang_text.trim().into(),
+            src: code,
+        })
     }
 
     pub fn parse(&mut self) -> Vec<OrgEle> {
