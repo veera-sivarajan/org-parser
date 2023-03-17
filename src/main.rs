@@ -11,5 +11,8 @@ fn main() {
     let contents = read_file(test_file);
     let mut parser = parser::Parser::new(&contents);
     let org = parser.parse();
-    println!("{org:?}");
+    // println!("{org:?}");
+    for ele in org {
+        println!("{ele:?}");
+    }
 }

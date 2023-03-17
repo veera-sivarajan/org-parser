@@ -35,6 +35,10 @@ pub enum OrgEle {
     UnOrderedList(Vec<String>),
     OrderedList(Vec<String>),
     CodeBlock(String),
+    H3(String),
+    H2(String),
+    H1(String),
+    Text(String),
 }
 
 impl<'a> Parser<'a> {
@@ -111,9 +115,27 @@ impl<'a> Parser<'a> {
                 elements.push(self.parse_ordered_list());
             } else if line.starts_with("#+BEGIN_SRC") {
                 elements.push(self.parse_code_block());
-            } else {
+            } else if line.starts_with("*** ") {
+                let index = line.find(' ').unwrap() + 1;
+                let title= &line[index..];
+                elements.push(OrgEle::H3(title.trim().to_string()));
                 self.lines.next();
-                continue;
+            } else if line.starts_with("** ") {
+                let index = line.find(' ').unwrap() + 1;
+                let title= &line[index..];
+                elements.push(OrgEle::H2(title.trim().to_string()));
+                self.lines.next();
+            } else if line.starts_with("* ") {
+                let index = line.find(' ').unwrap() + 1;
+                let title= &line[index..];
+                elements.push(OrgEle::H1(title.trim().to_string()));
+                self.lines.next();
+            } else {
+                let text = line.trim();
+                if !text.is_empty() {
+                    elements.push(OrgEle::Text(text.to_string()));
+                }
+                self.lines.next();
             }
         }
         elements.clone()
