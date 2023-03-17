@@ -40,12 +40,12 @@ enum ProgLang {
 
 impl From<&str> for ProgLang {
     fn from(text: &str) -> Self {
-        match text {
-            "rust" | "Rust" => ProgLang::Rust,
-            "python" | "Python" => ProgLang::Python,
-            "cpp" | "Cpp" => ProgLang::Cpp,
-            "c" | "C" => ProgLang::C,
-            "java" | "Java" => ProgLang::Java,
+        match text.to_lowercase().as_ref() {
+            "rust" => ProgLang::Rust,
+            "python" => ProgLang::Python,
+            "cpp" => ProgLang::Cpp,
+            "c" => ProgLang::C,
+            "java" => ProgLang::Java,
             _ => ProgLang::Unknown,
         }
     }
