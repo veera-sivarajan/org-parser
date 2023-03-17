@@ -14,8 +14,8 @@ As you can see on [[https://github.com/veera-sivarajan/org-parser/blob/fc512c437
 
 
 In the future, I plan to add support for the following elements:
-1. Tables
-2. Quotes
-3. Keywords
-4. Footnotes
-5. Images
+- [ ] Tables
+- [ ] Quotes
+- [ ] Keywords
+- [ ] Footnotes
+- [ ] Images
