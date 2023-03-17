@@ -16,6 +16,11 @@ Nesting headline is as easy as adding another start.
 3. a
 4. ordered
 5. lis
+6. this
+7. is
+8. a
+9. ordered
+10. lis
 * Headline #2
 #+BEGIN_SRC rust
   fn factorial(num: u32) -> u32 {

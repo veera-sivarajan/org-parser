@@ -2,8 +2,30 @@ use std::iter::Peekable;
 use std::str::Lines;
 
 pub struct Parser<'a> {
-    // elements: Vec<OrgEle>,
     lines: Peekable<Lines<'a>>,
+}
+
+trait OrgParser {
+    fn is_ordered_list(&self) -> bool;
+}
+
+impl OrgParser for &str {
+    fn is_ordered_list(&self) -> bool {
+        let chars = self.chars();
+        let mut preceded_by_digit = false;
+        let mut preceded_by_dot = false;
+        for c in chars {
+            if c.is_ascii_digit() {
+                preceded_by_digit = true;
+            } else if c == '.' && preceded_by_digit {
+                preceded_by_digit = false;
+                preceded_by_dot = true;
+            } else {
+                return c == ' ' && preceded_by_dot;
+            }
+        }
+        false 
+    }
 }
 
 #[derive(Debug, Clone)]
@@ -11,6 +33,7 @@ pub enum OrgEle {
     Title(String),
     Date(String),
     UnOrderedList(Vec<String>),
+    OrderedList(Vec<String>),
 }
 
 impl<'a> Parser<'a> {
@@ -46,6 +69,21 @@ impl<'a> Parser<'a> {
         OrgEle::UnOrderedList(list.clone())
     }
 
+    fn parse_ordered_list(&mut self) -> OrgEle {
+        let mut list = vec![];
+        while let Some(line) = self.lines.peek() {
+            if line.is_ordered_list() { 
+                let index = line.find(' ').unwrap() + 1;
+                let text = &line[index..];
+                list.push(text.trim().to_string());
+                self.lines.next();
+            } else {
+                break;
+            }
+        }
+        OrgEle::OrderedList(list.clone())
+    }
+
     pub fn parse(&mut self) -> Vec<OrgEle> {
         let mut elements = vec![];
         while let Some(line) = self.lines.peek() {
@@ -55,6 +93,8 @@ impl<'a> Parser<'a> {
                 elements.push(self.parse_date());
             } else if line.starts_with("- ") {
                 elements.push(self.parse_unordered_list());
+            } else if line.is_ordered_list() {
+                elements.push(self.parse_ordered_list());
             } else {
                 self.lines.next();
                 continue;
