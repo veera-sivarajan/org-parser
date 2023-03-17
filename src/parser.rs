@@ -24,7 +24,7 @@ impl OrgParser for &str {
                 return c == ' ' && preceded_by_dot;
             }
         }
-        false 
+        false
     }
 }
 
@@ -73,7 +73,7 @@ impl<'a> Parser<'a> {
     fn parse_ordered_list(&mut self) -> OrgEle {
         let mut list = vec![];
         while let Some(line) = self.lines.peek() {
-            if line.is_ordered_list() { 
+            if line.is_ordered_list() {
                 let index = line.find(' ').unwrap() + 1;
                 let text = &line[index..];
                 list.push(text.trim().to_string());

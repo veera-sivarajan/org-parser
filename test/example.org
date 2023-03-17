@@ -1,6 +1,11 @@
 #+TITLE: This is a sample org file
 #+DATE: <2022-08-06 Sat>
 This is an example org file created to test my org parser. 
+#+BEGIN_SRC rust
+  fn factorial(num: u32) -> u32 {
+      (1..=num).product()
+  }
+#+END_SRC
 * Headline #1
 Text can be put in headline. You can create another headline at the same level with another * character.
 ** Nested headline #1.1
@@ -22,9 +27,5 @@ Nesting headline is as easy as adding another start.
 9. ordered
 10. lis
 * Headline #2
-#+BEGIN_SRC rust
-  fn factorial(num: u32) -> u32 {
-      (1..=num).product()
-  }
-#+END_SRC
 * Headline #3
+
