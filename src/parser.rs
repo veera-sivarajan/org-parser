@@ -137,6 +137,13 @@ impl<'a> Parser<'a> {
         })
     }
 
+    fn parse_heading(&mut self) -> String {
+        let heading = self.lines.next().unwrap();
+        let index = heading.find(' ').unwrap() + 1;
+        let title = &heading[index..];
+        title.trim().to_string()
+    }
+
     pub fn parse(&mut self) -> Vec<OrgEle> {
         let mut elements = vec![];
         while let Some(line) = self.lines.peek() {
@@ -151,20 +158,11 @@ impl<'a> Parser<'a> {
             } else if line.starts_with("#+BEGIN_SRC") {
                 elements.push(self.parse_code_block());
             } else if line.starts_with("*** ") {
-                let index = line.find(' ').unwrap() + 1;
-                let title= &line[index..];
-                elements.push(OrgEle::H3(title.trim().to_string()));
-                self.lines.next();
+                elements.push(OrgEle::H3(self.parse_heading()));
             } else if line.starts_with("** ") {
-                let index = line.find(' ').unwrap() + 1;
-                let title= &line[index..];
-                elements.push(OrgEle::H2(title.trim().to_string()));
-                self.lines.next();
+                elements.push(OrgEle::H2(self.parse_heading()));
             } else if line.starts_with("* ") {
-                let index = line.find(' ').unwrap() + 1;
-                let title= &line[index..];
-                elements.push(OrgEle::H1(title.trim().to_string()));
-                self.lines.next();
+                elements.push(OrgEle::H1(self.parse_heading()));
             } else {
                 let text = line.trim();
                 if !text.is_empty() {
