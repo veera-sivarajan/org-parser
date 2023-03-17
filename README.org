@@ -1,0 +1,21 @@
+#+TITLE: Org Parser
+
+A work-in-progress parser for Org files. This project is intended to parse and play with a subset of Org syntax that I use regularly.
+
+As you can find on [[https://github.com/veera-sivarajan/org-parser/blob/fc512c437f972dd7545cb7ba121ccbd9891d6bee/src/parser.rs#L61][parser.rs]], the parser supports the following Org elements.
+1. Title
+2. Date
+3. Unordered lists
+4. Ordered lists
+5. Codeblocks
+6. Level 1 headings
+7. Level 2 headings
+8. Level 3 headings
+
+
+In the future, I plan to add support for the following elements:
+1. [ ] Tables
+2. [ ] Quotes
+3. [ ] Keywords
+4. [ ] Footnotes
+5. [ ] Images
