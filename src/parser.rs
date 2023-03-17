@@ -34,6 +34,7 @@ pub enum OrgEle {
     Date(String),
     UnOrderedList(Vec<String>),
     OrderedList(Vec<String>),
+    CodeBlock(String),
 }
 
 impl<'a> Parser<'a> {
@@ -84,6 +85,19 @@ impl<'a> Parser<'a> {
         OrgEle::OrderedList(list.clone())
     }
 
+    fn parse_code_block(&mut self) -> OrgEle {
+        let mut code = String::new();
+        self.lines.next();
+        for line in self.lines.by_ref() {
+            if line.starts_with("#+END_SRC") {
+                break;
+            } else {
+                code.push_str(line.trim());
+            }
+        }
+        OrgEle::CodeBlock(code)
+    }
+
     pub fn parse(&mut self) -> Vec<OrgEle> {
         let mut elements = vec![];
         while let Some(line) = self.lines.peek() {
@@ -95,6 +109,8 @@ impl<'a> Parser<'a> {
                 elements.push(self.parse_unordered_list());
             } else if line.is_ordered_list() {
                 elements.push(self.parse_ordered_list());
+            } else if line.starts_with("#+BEGIN_SRC") {
+                elements.push(self.parse_code_block());
             } else {
                 self.lines.next();
                 continue;
