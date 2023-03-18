@@ -40,7 +40,7 @@ enum ProgLang {
 
 impl From<&str> for ProgLang {
     fn from(text: &str) -> Self {
-        match text.to_lowercase().as_ref() {
+        match text.to_lowercase().as_str() {
             "rust" => ProgLang::Rust,
             "python" => ProgLang::Python,
             "cpp" => ProgLang::Cpp,
@@ -120,10 +120,9 @@ impl<'a> Parser<'a> {
 
     fn parse_code_block(&mut self) -> OrgEle {
         let mut code = String::new();
-        let first_line = self.lines.peek().unwrap();
+        let first_line = self.lines.next().unwrap();
         let index = first_line.find(' ').unwrap() + 1;
         let lang_text = &first_line[index..];
-        self.lines.next();
         for line in self.lines.by_ref() {
             if line.starts_with("#+END_SRC") {
                 break;
