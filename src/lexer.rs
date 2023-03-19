@@ -28,6 +28,21 @@ impl OrgLexer for &str {
     }
 }
 
+mod test {
+    use super::*;
+
+    #[test]
+    fn test_is_ordered_list() {
+        assert!("1. ".is_ordered_list());
+        assert!("10. ".is_ordered_list());
+        assert!("100. ".is_ordered_list());
+        assert!(!"1.".is_ordered_list());
+        assert!(!"10 ".is_ordered_list());
+        assert!(!". ".is_ordered_list());
+        assert!(!"1 ".is_ordered_list());
+    }
+}
+
 #[derive(Debug, Clone)]
 enum ProgLang {
     Rust,
