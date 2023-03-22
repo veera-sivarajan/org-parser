@@ -3,6 +3,7 @@ use std::str::Lines;
 
 pub struct Lexer<'a> {
     lines: Peekable<Lines<'a>>,
+    level: Level,
 }
 
 trait OrgLexer {
@@ -28,9 +29,10 @@ impl OrgLexer for &str {
     }
 }
 
+#[cfg(test)]
 mod test {
     use super::*;
-
+    
     #[test]
     fn test_is_ordered_list() {
         assert!("1. ".is_ordered_list());
@@ -40,10 +42,13 @@ mod test {
         assert!(!"10 ".is_ordered_list());
         assert!(!". ".is_ordered_list());
         assert!(!"1 ".is_ordered_list());
+        assert!(!"test str".is_ordered_list());
     }
 }
 
-#[derive(Debug, Clone)]
+
+
+#[derive(Debug, Clone, PartialEq)]
 enum ProgLang {
     Rust,
     Python,
@@ -66,42 +71,67 @@ impl From<&str> for ProgLang {
     }
 }
 
+#[derive(Debug, Copy, Clone)]
+enum Level {
+    One,
+    Two,
+    Three,
+}
+
 #[derive(Debug, Clone)]
 pub struct CodeBlock {
     language: ProgLang,
     src: String,
+    level: Level,
+}
+
+#[derive(Debug, Clone)]
+pub struct OrgData {
+    level: Level,
+    data: String,
+}
+
+#[derive(Debug, Clone)]
+pub struct OrgList {
+    level: Level,
+    data: Vec<String>,
 }
 
 #[derive(Debug, Clone)]
 pub enum OrgEle {
-    Title(String),
-    Date(String),
-    UnOrderedList(Vec<String>),
-    OrderedList(Vec<String>),
+    Title(OrgData),
+    Date(OrgData),
+    UnOrderedList(OrgList),
+    OrderedList(OrgList),
     CodeBlock(CodeBlock),
-    H3(String),
-    H2(String),
-    H1(String),
-    Text(String),
+    Headline(OrgData),
+    Text(OrgData),
 }
 
 impl<'a> Lexer<'a> {
     pub fn new(contents: &'a str) -> Self {
         Self {
             lines: contents.lines().peekable(),
+            level: Level::One,
         }
     }
 
     fn lex_title(&mut self) -> OrgEle {
         let title =
             self.lines.next().unwrap().strip_prefix("#+TITLE:").unwrap();
-        OrgEle::Title(title.trim().to_string())
+        OrgEle::Title(OrgData {
+            data: title.trim().to_string(),
+            level: self.level,
+        })
     }
 
     fn lex_date(&mut self) -> OrgEle {
         let date =
             self.lines.next().unwrap().strip_prefix("#+DATE:").unwrap();
-        OrgEle::Date(date.trim().to_string())
+        OrgEle::Date(OrgData {
+            data: date.trim().to_string(),
+            level: self.level,
+        })
     }
 
     fn lex_unordered_list(&mut self) -> OrgEle {
@@ -115,7 +145,10 @@ impl<'a> Lexer<'a> {
                 break;
             }
         }
-        OrgEle::UnOrderedList(list.clone())
+        OrgEle::UnOrderedList(OrgList {
+            data: list.clone(),
+            level: self.level,
+        })
     }
 
     fn lex_ordered_list(&mut self) -> OrgEle {
@@ -130,7 +163,10 @@ impl<'a> Lexer<'a> {
                 break;
             }
         }
-        OrgEle::OrderedList(list.clone())
+        OrgEle::OrderedList(OrgList {
+            data: list.clone(),
+            level: self.level,
+        })
     }
 
     fn lex_code_block(&mut self) -> OrgEle {
@@ -148,6 +184,7 @@ impl<'a> Lexer<'a> {
         OrgEle::CodeBlock(CodeBlock {
             language: lang_text.trim().into(),
             src: code,
+            level: self.level,
         })
     }
 
@@ -172,15 +209,30 @@ impl<'a> Lexer<'a> {
             } else if line.starts_with("#+BEGIN_SRC") {
                 elements.push(self.lex_code_block());
             } else if line.starts_with("*** ") {
-                elements.push(OrgEle::H3(self.lex_heading()));
+                self.level = Level::Three;
+                elements.push(OrgEle::Headline(OrgData {
+                    data: self.lex_heading(),
+                    level: self.level
+                }));
             } else if line.starts_with("** ") {
-                elements.push(OrgEle::H2(self.lex_heading()));
+                self.level = Level::Two;
+                elements.push(OrgEle::Headline(OrgData {
+                    data: self.lex_heading(),
+                    level: self.level
+                }));
             } else if line.starts_with("* ") {
-                elements.push(OrgEle::H1(self.lex_heading()));
+                self.level = Level::One;
+                elements.push(OrgEle::Headline(OrgData {
+                    data: self.lex_heading(),
+                    level: self.level
+                }));
             } else {
                 let text = line.trim();
                 if !text.is_empty() {
-                    elements.push(OrgEle::Text(text.to_string()));
+                    elements.push(OrgEle::Text(OrgData {
+                        data: text.to_string(),
+                        level: self.level
+                    }));
                 }
                 self.lines.next();
             }

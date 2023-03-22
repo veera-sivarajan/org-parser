@@ -27,5 +27,6 @@ Nesting headline is as easy as adding another start.
 9. ordered
 10. lis
 * Headline #2
+So I just made the tokens aware of their level in the org document. Does it really work?
 * Headline #3
 
