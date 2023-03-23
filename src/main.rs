@@ -8,6 +8,7 @@ fn read_file(name: &str) -> String {
 
 fn main() {
     let test_file = "/home/veera/Projects/orgp/test/example.org";
+    let test_file = "/home/veera/Classes/s23/networking/labs/lan-switching/prelab.org";
     let contents = read_file(test_file);
     let mut lexer = lexer::Lexer::new(&contents);
     let org = lexer.lex();

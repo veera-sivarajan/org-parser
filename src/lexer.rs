@@ -6,28 +6,6 @@ pub struct Lexer<'a> {
     level: Level,
 }
 
-trait OrgLexer {
-    fn is_ordered_list(&self) -> bool;
-}
-
-impl OrgLexer for &str {
-    fn is_ordered_list(&self) -> bool {
-        let chars = self.chars();
-        let mut preceded_by_digit = false;
-        let mut preceded_by_dot = false;
-        for c in chars {
-            if c.is_ascii_digit() {
-                preceded_by_digit = true;
-            } else if c == '.' && preceded_by_digit {
-                preceded_by_digit = false;
-                preceded_by_dot = true;
-            } else {
-                return c == ' ' && preceded_by_dot;
-            }
-        }
-        false
-    }
-}
 
 #[cfg(test)]
 mod test {
@@ -35,17 +13,34 @@ mod test {
     
     #[test]
     fn test_is_ordered_list() {
-        assert!("1. ".is_ordered_list());
-        assert!("10. ".is_ordered_list());
-        assert!("100. ".is_ordered_list());
-        assert!(!"1.".is_ordered_list());
-        assert!(!"10 ".is_ordered_list());
-        assert!(!". ".is_ordered_list());
-        assert!(!"1 ".is_ordered_list());
-        assert!(!"test str".is_ordered_list());
+        assert!(is_ordered_list("1. "));
+        assert!(is_ordered_list("10. "));
+        assert!(is_ordered_list("100. "));
+        assert!(!is_ordered_list("1."));
+        assert!(!is_ordered_list("10 "));
+        assert!(!is_ordered_list(". "));
+        assert!(!is_ordered_list("1 "));
+        assert!(!is_ordered_list("test str"));
     }
 }
 
+
+fn is_ordered_list(line: &str) -> bool {
+    let chars = line.chars();
+    let mut preceded_by_digit = false;
+    let mut preceded_by_dot = false;
+    for c in chars {
+        if c.is_ascii_digit() {
+            preceded_by_digit = true;
+        } else if c == '.' && preceded_by_digit {
+            preceded_by_digit = false;
+            preceded_by_dot = true;
+        } else {
+            return c == ' ' && preceded_by_dot;
+        }
+    }
+    false
+}
 
 
 #[derive(Debug, Clone, PartialEq)]
@@ -151,10 +146,12 @@ impl<'a> Lexer<'a> {
         })
     }
 
+
     fn lex_ordered_list(&mut self) -> OrgEle {
         let mut list = vec![];
         while let Some(line) = self.lines.peek() {
-            if line.is_ordered_list() {
+            // if line.is_ordered_list() {
+            if self.is_ordered_list(line) {
                 let index = line.find(' ').unwrap() + 1;
                 let text = &line[index..];
                 list.push(text.trim().to_string());
@@ -204,7 +201,7 @@ impl<'a> Lexer<'a> {
                 elements.push(self.lex_date());
             } else if line.starts_with("- ") {
                 elements.push(self.lex_unordered_list());
-            } else if line.is_ordered_list() {
+            } else if is_ordered_list(line) {
                 elements.push(self.lex_ordered_list());
             } else if line.starts_with("#+BEGIN_SRC") {
                 elements.push(self.lex_code_block());
