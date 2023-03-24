@@ -150,8 +150,7 @@ impl<'a> Lexer<'a> {
     fn lex_ordered_list(&mut self) -> OrgEle {
         let mut list = vec![];
         while let Some(line) = self.lines.peek() {
-            // if line.is_ordered_list() {
-            if self.is_ordered_list(line) {
+            if is_ordered_list(line) {
                 let index = line.find(' ').unwrap() + 1;
                 let text = &line[index..];
                 list.push(text.trim().to_string());
